@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1787233790505,
+      "tag": "0000_medical_blur",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787292558661,
+      "tag": "0001_pretty_naoko",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787900000000,
+      "tag": "0002_add_users_auth",
+      "breakpoints": true
+    }
+  ]
+}

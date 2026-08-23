@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme tokens. Default (no data-theme attribute) = "midnight", the original look. */
+:root,
+[data-theme="midnight"] {
+  --color-base-950: 10 14 23;
+  --color-base-900: 15 23 42;
+  --color-base-800: 21 31 50;
+  --color-base-700: 30 41 59;
+  --color-slate-50: 248 250 252;
+  --color-slate-100: 241 245 249;
+  --color-slate-200: 226 232 240;
+  --color-slate-300: 203 213 225;
+  --color-slate-400: 148 163 184;
+  --color-slate-500: 100 116 139;
+  --color-slate-600: 71 85 105;
+  --color-accent-300: 252 211 77;
+  --color-accent-400: 251 191 36;
+  --color-red-400: 248 113 113;
+  --color-red-950: 69 10 10;
+  --color-emerald-400: 52 211 153;
+  --color-rose-500: 244 63 94;
+  --color-hairline: 255 255 255;
+  color-scheme: dark;
+}
+
+[data-theme="slate"] {
+  --color-base-950: 8 11 18;
+  --color-base-900: 17 24 39;
+  --color-base-800: 31 41 55;
+  --color-base-700: 55 65 81;
+  --color-slate-50: 248 250 252;
+  --color-slate-100: 241 245 249;
+  --color-slate-200: 226 232 240;
+  --color-slate-300: 203 213 225;
+  --color-slate-400: 148 163 184;
+  --color-slate-500: 100 116 139;
+  --color-slate-600: 71 85 105;
+  --color-accent-300: 125 211 252;
+  --color-accent-400: 56 189 248;
+  --color-red-400: 248 113 113;
+  --color-red-950: 69 10 10;
+  --color-emerald-400: 52 211 153;
+  --color-rose-500: 244 63 94;
+  --color-hairline: 255 255 255;
+  color-scheme: dark;
+}
+
+[data-theme="crimson"] {
+  --color-base-950: 15 8 10;
+  --color-base-900: 28 15 18;
+  --color-base-800: 44 24 28;
+  --color-base-700: 64 36 41;
+  --color-slate-50: 248 250 252;
+  --color-slate-100: 241 245 249;
+  --color-slate-200: 226 232 240;
+  --color-slate-300: 203 213 225;
+  --color-slate-400: 148 163 184;
+  --color-slate-500: 100 116 139;
+  --color-slate-600: 71 85 105;
+  --color-accent-300: 253 164 175;
+  --color-accent-400: 251 113 133;
+  --color-red-400: 248 113 113;
+  --color-red-950: 69 10 10;
+  --color-emerald-400: 52 211 153;
+  --color-rose-500: 244 63 94;
+  --color-hairline: 255 255 255;
+  color-scheme: dark;
+}
+
+[data-theme="daylight"] {
+  --color-base-950: 255 255 255;
+  --color-base-900: 248 250 252;
+  --color-base-800: 241 245 249;
+  --color-base-700: 226 232 240;
+  --color-slate-50: 15 23 42;
+  --color-slate-100: 15 23 42;
+  --color-slate-200: 30 41 59;
+  --color-slate-300: 51 65 85;
+  --color-slate-400: 71 85 105;
+  --color-slate-500: 100 116 139;
+  --color-slate-600: 148 163 184;
+  --color-accent-300: 180 83 9;
+  --color-accent-400: 217 119 6;
+  --color-red-400: 220 38 38;
+  --color-red-950: 254 226 226;
+  --color-emerald-400: 5 150 105;
+  --color-rose-500: 225 29 72;
+  --color-hairline: 0 0 0;
+  color-scheme: light;
+}
+
+[data-theme="ocean"] {
+  --color-base-950: 244 250 253;
+  --color-base-900: 235 246 251;
+  --color-base-800: 219 237 247;
+  --color-base-700: 191 219 237;
+  --color-slate-50: 12 30 46;
+  --color-slate-100: 12 30 46;
+  --color-slate-200: 24 49 71;
+  --color-slate-300: 42 71 97;
+  --color-slate-400: 69 99 125;
+  --color-slate-500: 100 130 156;
+  --color-slate-600: 140 168 190;
+  --color-accent-300: 3 105 161;
+  --color-accent-400: 2 132 199;
+  --color-red-400: 220 38 38;
+  --color-red-950: 254 226 226;
+  --color-emerald-400: 5 150 105;
+  --color-rose-500: 225 29 72;
+  --color-hairline: 0 0 0;
+  color-scheme: light;
+}
+
+[data-theme="paper"] {
+  --color-base-950: 250 246 240;
+  --color-base-900: 245 238 227;
+  --color-base-800: 237 227 210;
+  --color-base-700: 224 210 186;
+  --color-slate-50: 41 28 18;
+  --color-slate-100: 41 28 18;
+  --color-slate-200: 61 45 30;
+  --color-slate-300: 87 66 45;
+  --color-slate-400: 115 92 66;
+  --color-slate-500: 148 125 97;
+  --color-slate-600: 181 160 133;
+  --color-accent-300: 194 65 12;
+  --color-accent-400: 234 88 12;
+  --color-red-400: 220 38 38;
+  --color-red-950: 254 226 226;
+  --color-emerald-400: 5 150 105;
+  --color-rose-500: 225 29 72;
+  --color-hairline: 0 0 0;
+  color-scheme: light;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: rgb(var(--color-base-950));
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-slate-600));
+  border-radius: 9999px;
+}
