@@ -14,7 +14,7 @@ if (env.ADMIN_PASSWORD === "changeme123") {
 
 const app = createApp();
 
-app.listen(env.PORT, "127.0.0.1", () => {
-  logger.info(`Marquee backend listening on http://127.0.0.1:${env.PORT}`);
+app.listen(env.PORT, env.HOST, () => {
+  logger.info(`Marquee backend listening on http://${env.HOST}:${env.PORT}`);
   registerDailyDigestJob();
 });

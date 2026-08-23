@@ -35,9 +35,10 @@ marquee/
   frontend/         Vite + React + TypeScript + Tailwind, PWA via vite-plugin-pwa
   backend/          Express + TypeScript, SQLite (better-sqlite3 + drizzle-orm)
   packages/shared/  Type-only DTOs shared by both, zero runtime coupling
+  desktop/          Tauri shell wrapping the same frontend build (see below)
 ```
 
-The backend is a standalone REST API (`backend/src/app.ts` is a pure Express factory; `backend/src/server.ts` is the only file that binds a port and registers the cron job) — deliberately structured so it can run behind Docker, be reached by a desktop client, or eventually be wrapped by a native shell without any rework.
+The backend is a standalone REST API (`backend/src/app.ts` is a pure Express factory; `backend/src/server.ts` is the only file that binds a port and registers the cron job) — deliberately structured so it can run behind Docker and be reached by any number of clients: the web frontend, the desktop app, or your own.
 
 ## Getting started
 
@@ -63,7 +64,33 @@ Paste the output into `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` in `backend/.env`
 
 ### Deploying with Docker
 
-A `docker-compose.yml` and `.env.stack.example` are included at the repo root — copy the example to `.env`, fill in your keys, and `docker compose up -d`. Works as-is in Portainer's stack editor too (paste the example file's contents into the environment-variables field).
+Two stacks are included at the repo root, both usable directly with `docker compose` or pasted into Portainer's stack editor (compose file as the stack, example file's contents as the environment variables):
+
+- **`docker-compose.yml`** + **`.env.stack.example`** — backend + web frontend (nginx). Use this if anyone will use Marquee in a browser or install the PWA.
+- **`docker-compose.server-only.yml`** + **`.env.stack.server-only.example`** — backend only, no bundled frontend. Use this if every client is the [Marquee desktop app](#desktop-app) — the desktop app talks directly to this API, so there's no reason to also run the web frontend container.
+
+```bash
+# full stack
+cp .env.stack.example .env
+docker compose up -d
+
+# server-only (desktop clients)
+cp .env.stack.server-only.example .env
+docker compose -f docker-compose.server-only.yml up -d
+```
+
+## Desktop app
+
+`desktop/` is a [Tauri](https://tauri.app/) shell around the same frontend — no separate UI to maintain, just the existing React app running in the OS's native WebView instead of a browser tab. The server stays wherever you deployed it; the desktop app is a thin client.
+
+On first launch it asks for a server address, like Jellyfin/Plex desktop clients — you can save several servers and switch between them later from Settings. The frontend's API base URL is resolved at runtime (`frontend/src/lib/serverConfig.ts`), not baked in at build time, so one desktop build works against anyone's self-hosted instance.
+
+```bash
+npm run desktop:dev    # launches a native window against the Vite dev server
+npm run desktop:build  # produces a signed(ish)/unsigned installer for your OS
+```
+
+Requires the [Rust toolchain](https://www.rust-lang.org/tools/install) in addition to Node.
 
 ## Tech stack
 

@@ -7,7 +7,7 @@ import { ThemePicker } from "../components/ThemePicker";
 import { useUpdateSettings } from "../hooks/useSettings";
 import { useAuth } from "../lib/AuthContext";
 import { useLanguage } from "../lib/i18n/LanguageContext";
-import { clearServerUrl, getServerUrl, isDesktop } from "../lib/serverConfig";
+import { clearActiveServer, getServerUrl, isDesktop } from "../lib/serverConfig";
 
 export function SettingsPage() {
   const { language, setLanguage, t } = useLanguage();
@@ -22,7 +22,7 @@ export function SettingsPage() {
 
   async function handleChangeServer() {
     await logout().catch(() => {});
-    clearServerUrl();
+    clearActiveServer();
     window.location.reload();
   }
 
@@ -77,7 +77,7 @@ export function SettingsPage() {
             onClick={handleChangeServer}
             className="rounded-lg bg-base-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-base-700"
           >
-            Change server
+            Switch server
           </button>
         </section>
       )}

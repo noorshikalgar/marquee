@@ -5,13 +5,16 @@
   "workspaces": [
     "frontend",
     "backend",
-    "packages/shared"
+    "packages/shared",
+    "desktop"
   ],
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev -w backend\" \"npm run dev -w frontend\"",
     "build": "npm run build -w packages/shared && npm run build -w backend && npm run build -w frontend",
     "db:generate": "npm run db:generate -w backend",
-    "db:migrate": "npm run db:migrate -w backend"
+    "db:migrate": "npm run db:migrate -w backend",
+    "desktop:dev": "npm run dev -w desktop",
+    "desktop:build": "npm run build -w desktop"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

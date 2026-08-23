@@ -10,6 +10,10 @@ const envSchema = z.object({
   VAPID_PRIVATE_KEY: z.string().optional().default(""),
   VAPID_SUBJECT: z.string().optional().default("mailto:you@example.com"),
   PORT: z.coerce.number().default(8787),
+  // 127.0.0.1 for local dev (never exposed beyond the host). Docker deployments
+  // must set this to 0.0.0.0 — otherwise the process is unreachable from other
+  // containers (nginx reverse proxy) or from a published port.
+  HOST: z.string().default("127.0.0.1"),
   DB_PATH: z.string().default("./data/movie-scout.db"),
   NOTIFICATION_CRON: z.string().default("0 9 * * *"),
   FRONTEND_ORIGIN: z.string().default("http://localhost:5173"),

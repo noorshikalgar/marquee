@@ -17,9 +17,14 @@ services:
       NOTIFICATION_CRON: ${NOTIFICATION_CRON:-0 9 * * *}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
-      # Same-origin via the nginx proxy in the frontend container — no separate public
-      # backend origin needed. List the site's real origin(s) here, comma-separated.
+      # No bundled frontend/nginx here — this is a bare API server for desktop
+      # (Tauri) clients and/or a separately-hosted frontend. Include every origin
+      # that will call this server: your desktop app's webview origin(s)
+      # (tauri://localhost on macOS/Linux, https://tauri.localhost on Windows)
+      # and any web frontend origin, comma-separated.
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
+    ports:
+      - "${BACKEND_PORT:-8787}:8787"
     volumes:
       - movie-scout-data:/app/backend/data
     healthcheck:
@@ -27,23 +32,6 @@ services:
       interval: 30s
       timeout: 5s
       start_period: 15s
-      retries: 3
-
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_healthy
-    ports:
-      - "${HTTP_PORT:-8080}:80"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
-      interval: 30s
-      timeout: 5s
-      start_period: 10s
       retries: 3
 
 volumes:

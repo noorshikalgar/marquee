@@ -11,7 +11,7 @@ import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { useThemeSync } from "./hooks/useTheme";
 import { useAuth } from "./lib/AuthContext";
 import { useLanguage } from "./lib/i18n/LanguageContext";
-import { isDesktop, hasServerUrl } from "./lib/serverConfig";
+import { hasActiveServer, isDesktop } from "./lib/serverConfig";
 import { AdminPage } from "./pages/AdminPage";
 import { AdvancedBrowsePage } from "./pages/AdvancedBrowsePage";
 import { BrowsePage } from "./pages/BrowsePage";
@@ -39,7 +39,7 @@ export function App() {
   const location = useLocation();
   const { t } = useLanguage();
   const { user, loading } = useAuth();
-  const [serverConnected, setServerConnected] = useState(hasServerUrl());
+  const [serverConnected, setServerConnected] = useState(hasActiveServer());
   useThemeSync();
 
   if (isDesktop() && !serverConnected) {
