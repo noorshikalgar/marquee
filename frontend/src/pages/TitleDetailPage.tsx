@@ -3,6 +3,7 @@ import { Bookmark, ExternalLink, Eye, Star, ThumbsDown, ThumbsUp } from "lucide-
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import clsx from "clsx";
+import { BackButton } from "../components/BackButton";
 import { ImageCarousel } from "../components/ImageCarousel";
 import { TitleGrid } from "../components/TitleGrid";
 import { useAddToPlaylist, useRemoveFromPlaylist, useWatchlist } from "../hooks/usePlaylists";
@@ -63,6 +64,9 @@ export function TitleDetailPage() {
   return (
     <div>
       <div className={clsx("relative overflow-hidden", title.backdropUrl && "min-h-96 sm:min-h-[28rem] md:min-h-[34rem]")}>
+        <div className="absolute left-4 top-4 z-10">
+          <BackButton overlay />
+        </div>
         {title.backdropUrl && (
           <>
             <motion.img

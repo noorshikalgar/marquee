@@ -2,6 +2,8 @@ export type Language = "en" | "hi";
 
 export const translations = {
   en: {
+    common_back: "Back",
+
     nav_browse: "Browse",
     nav_search: "AI Search",
     nav_forYou: "For You",
@@ -107,6 +109,8 @@ export const translations = {
     common_offline: "You're offline — showing saved data where available.",
   },
   hi: {
+    common_back: "वापस",
+
     nav_browse: "ब्राउज़",
     nav_search: "AI खोज",
     nav_forYou: "आपके लिए",

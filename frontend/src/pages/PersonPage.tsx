@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { BackButton } from "../components/BackButton";
 import { TitleGrid } from "../components/TitleGrid";
 import { usePerson } from "../hooks/usePerson";
 import { useLanguage } from "../lib/i18n/LanguageContext";
@@ -13,6 +14,8 @@ export function PersonPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6">
+      <BackButton />
+
       <div className="flex flex-col gap-6 sm:flex-row">
         <div className="h-40 w-40 shrink-0 overflow-hidden rounded-xl bg-base-800 ring-1 ring-hairline/10">
           {person.profileUrl && (
