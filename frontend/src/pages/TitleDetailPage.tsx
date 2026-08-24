@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { BackButton } from "../components/BackButton";
 import { ImageCarousel } from "../components/ImageCarousel";
+import { TitleDetailSkeleton } from "../components/skeletons/TitleDetailSkeleton";
 import { TitleGrid } from "../components/TitleGrid";
 import { useAddToPlaylist, useRemoveFromPlaylist, useWatchlist } from "../hooks/usePlaylists";
 import { useDeleteInteraction, useRecordInteraction, useTitleDetail } from "../hooks/useTitles";
@@ -28,7 +29,7 @@ export function TitleDetailPage() {
 
   const inWatchlist = title ? (watchlistData?.items.some((i) => i.title.tmdbId === title.tmdbId) ?? false) : false;
 
-  if (isLoading) return <div className="px-4 py-12 text-center text-slate-500">{t("title_loading")}</div>;
+  if (isLoading) return <TitleDetailSkeleton />;
   if (isError || !title) return <div className="px-4 py-12 text-center text-red-400">{t("title_error")}</div>;
 
   const displayTitle = formatLocalizedTitle(title.title, title.localizedTitle);
@@ -84,11 +85,12 @@ export function TitleDetailPage() {
 
         <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-24 sm:pb-16 sm:pt-36">
           <div className="flex flex-col gap-6 sm:flex-row">
-            <img
-              src={title.posterUrl ?? undefined}
-              alt={title.title}
-              className="aspect-[2/3] w-40 shrink-0 self-start rounded-xl object-cover shadow-2xl ring-1 ring-hairline/10 sm:w-56"
-            />
+            <motion.div
+              layoutId={`poster-${title.mediaType}-${title.tmdbId}`}
+              className="aspect-[2/3] w-40 shrink-0 self-start overflow-hidden rounded-xl shadow-2xl ring-1 ring-hairline/10 sm:w-56"
+            >
+              {title.posterUrl && <img src={title.posterUrl} alt={title.title} className="h-full w-full object-cover" />}
+            </motion.div>
 
             <div className="flex-1 space-y-4">
               <div>

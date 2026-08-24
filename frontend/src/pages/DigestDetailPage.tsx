@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { ListSkeleton } from "../components/skeletons/ListSkeleton";
 import { useAddToPlaylist, useWatchlist } from "../hooks/usePlaylists";
 import { useDigest } from "../hooks/useDigests";
 
@@ -9,7 +10,13 @@ export function DigestDetailPage() {
   const { watchlistId } = useWatchlist();
   const addToPlaylist = useAddToPlaylist();
 
-  if (isLoading) return <div className="px-4 py-12 text-center text-slate-500">Loading…</div>;
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
+        <ListSkeleton count={4} withThumbnail />
+      </div>
+    );
+  }
   if (!digest) return <div className="px-4 py-12 text-center text-red-400">Couldn't find that notification.</div>;
 
   return (

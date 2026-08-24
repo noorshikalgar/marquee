@@ -1,5 +1,6 @@
 import type { Title } from "@movie-scout/shared";
-import { Bookmark, Heart, Star } from "lucide-react";
+import { Bookmark, Clapperboard, Heart, Star } from "lucide-react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import { formatLocalizedTitle } from "../hooks/useLocalizedTitles";
@@ -33,7 +34,10 @@ export function TitleCard({
           isLiked ? "ring-2 ring-rose-500/80" : "ring-hairline/5 hover:ring-amber-400/50",
         )}
       >
-        <div className="relative aspect-[2/3] w-full overflow-hidden bg-base-700">
+        <motion.div
+          layoutId={`poster-${title.mediaType}-${title.tmdbId}`}
+          className="relative aspect-[2/3] w-full overflow-hidden bg-base-700"
+        >
           {title.posterUrl ? (
             <img
               src={title.posterUrl}
@@ -42,7 +46,9 @@ export function TitleCard({
               className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-xs text-slate-500">No image</div>
+            <div className="flex h-full items-center justify-center bg-gradient-to-br from-base-800 to-base-900">
+              <Clapperboard className="h-1/4 w-1/4 text-slate-600" />
+            </div>
           )}
           {onAddToWatchlist && (
             <button
@@ -62,7 +68,7 @@ export function TitleCard({
               <Bookmark className="h-4 w-4" fill={inWatchlist ? "currentColor" : "none"} />
             </button>
           )}
-        </div>
+        </motion.div>
         <div className="relative p-2.5">
           {onToggleLike && (
             <button

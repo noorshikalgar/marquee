@@ -1,6 +1,7 @@
 import type { Playlist } from "@movie-scout/shared";
 import { Sparkles } from "lucide-react";
 import { TitleGrid } from "../components/TitleGrid";
+import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
 import { useAiPlaylists, usePlaylistDetail, useRefreshAiPlaylists } from "../hooks/usePlaylists";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 
@@ -16,7 +17,7 @@ function ForYouSection({ playlist }: { playlist: Playlist }) {
         {playlist.description && <p className="text-sm text-slate-500">{playlist.description}</p>}
       </div>
       {isLoading ? (
-        <p className="text-sm text-slate-500">{t("title_loading")}</p>
+        <TitleGridSkeleton count={6} />
       ) : titles.length === 0 ? (
         <p className="text-sm text-slate-500">{t("forYou_empty")}</p>
       ) : (
@@ -55,7 +56,7 @@ export function ForYouPage() {
       )}
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">{t("title_loading")}</p>
+        <TitleGridSkeleton />
       ) : !playlists || playlists.length === 0 ? (
         <div className="rounded-xl border border-hairline/5 bg-base-900 p-8 text-center">
           <p className="text-sm text-slate-400">{t("forYou_empty")}</p>

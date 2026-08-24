@@ -2,6 +2,7 @@ import type { MediaType } from "@movie-scout/shared";
 import { useState } from "react";
 import clsx from "clsx";
 import { TitleGrid } from "../components/TitleGrid";
+import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
 import { defaultDiscoverFilters, useDiscover } from "../hooks/useDiscover";
 import { useCountries } from "../hooks/useMeta";
 import { usePersonalized, useTrending } from "../hooks/useTitles";
@@ -67,7 +68,7 @@ export function BrowsePage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-slate-100">{t("browse_forYou")}</h2>
           {personalized.isLoading ? (
-            <p className="text-sm text-slate-500">{t("browse_loadingForYou")}</p>
+            <TitleGridSkeleton count={6} />
           ) : (
             <TitleGrid titles={personalized.data?.results ?? []} />
           )}
@@ -88,7 +89,7 @@ export function BrowsePage() {
             )}
           </h2>
           {regional.isLoading ? (
-            <p className="text-sm text-slate-500">{t("browse_loading")}</p>
+            <TitleGridSkeleton count={6} />
           ) : (
             <TitleGrid titles={regionalTitles} />
           )}
@@ -98,7 +99,7 @@ export function BrowsePage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-slate-100">{t("browse_trending")}</h2>
         {trending.isPending ? (
-          <p className="text-sm text-slate-500">{t("browse_loadingTrending")}</p>
+          <TitleGridSkeleton />
         ) : trending.isError ? (
           <p className="text-sm text-red-400">{t("browse_errorTrending")}</p>
         ) : (

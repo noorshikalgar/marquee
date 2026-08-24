@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
 import { TitleGrid } from "../components/TitleGrid";
+import { PersonDetailSkeleton } from "../components/skeletons/TitleDetailSkeleton";
 import { usePerson } from "../hooks/usePerson";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 
@@ -9,7 +10,7 @@ export function PersonPage() {
   const { personId } = useParams<{ personId: string }>();
   const { data: person, isLoading, isError } = usePerson(Number(personId));
 
-  if (isLoading) return <div className="px-4 py-12 text-center text-slate-500">{t("title_loading")}</div>;
+  if (isLoading) return <PersonDetailSkeleton />;
   if (isError || !person) return <div className="px-4 py-12 text-center text-red-400">Couldn't load this person.</div>;
 
   return (

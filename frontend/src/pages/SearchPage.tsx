@@ -2,6 +2,7 @@ import { Search, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { TitleGrid } from "../components/TitleGrid";
+import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
 import { useNlSearch } from "../hooks/useSearch";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 
@@ -91,6 +92,8 @@ export function SearchPage() {
       </div>
 
       {nlSearch.isError && <p className="text-sm text-red-400">{t("search_error")}</p>}
+
+      {nlSearch.isFetching && !nlSearch.data && <TitleGridSkeleton />}
 
       {nlSearch.data && (
         <div className="space-y-4">

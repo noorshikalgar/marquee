@@ -2,6 +2,7 @@ import { Bell, BellRing, ChevronRight, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
+import { ListSkeleton } from "../components/skeletons/ListSkeleton";
 import { useDigests, useGenerateDigestNow, useMarkDigestRead } from "../hooks/useDigests";
 import { disablePushNotifications, enablePushNotifications, getExistingSubscription, isPushSupported } from "../lib/pushSubscribe";
 import { useLanguage } from "../lib/i18n/LanguageContext";
@@ -113,7 +114,7 @@ export function NotificationsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">{t("title_loading")}</p>
+        <ListSkeleton />
       ) : !digests || digests.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate-500">{t("notifications_empty")}</p>
       ) : (

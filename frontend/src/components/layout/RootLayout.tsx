@@ -18,7 +18,7 @@ export function RootLayout({ online, children }: { online: boolean; children: Re
             {t("common_offline")}
           </div>
         )}
-        <main className="flex-1">{children}</main>
+        <main className="relative flex-1">{children}</main>
       </div>
     </div>
   );

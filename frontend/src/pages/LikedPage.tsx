@@ -1,5 +1,6 @@
 import { Heart } from "lucide-react";
 import { TitleGrid } from "../components/TitleGrid";
+import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
 import { useLikedTitlesFull } from "../hooks/useLikedTitles";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 
@@ -16,7 +17,7 @@ export function LikedPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">{t("title_loading")}</p>
+        <TitleGridSkeleton />
       ) : !liked || liked.length === 0 ? (
         <p className="text-sm text-slate-500">{t("my_likedEmpty")}</p>
       ) : (

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import clsx from "clsx";
 import { TitleGrid } from "../components/TitleGrid";
+import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
 import { defaultDiscoverFilters, useDiscover, type DiscoverFilters } from "../hooks/useDiscover";
 import { useCountries, useGenres, useLanguages } from "../hooks/useMeta";
 import { useLanguage } from "../lib/i18n/LanguageContext";
@@ -207,7 +208,7 @@ export function AdvancedBrowsePage() {
       </div>
 
       {discover.isPending ? (
-        <p className="text-sm text-slate-500">{t("browse_loading")}</p>
+        <TitleGridSkeleton />
       ) : discover.isError ? (
         <p className="text-sm text-red-400">{t("browse_errorTrending")}</p>
       ) : (

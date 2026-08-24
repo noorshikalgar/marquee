@@ -3,6 +3,7 @@ import { CalendarClock } from "lucide-react";
 import { useState } from "react";
 import clsx from "clsx";
 import { TitleGrid } from "../components/TitleGrid";
+import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
 import { useUpcoming, type UpcomingBucket } from "../hooks/useUpcoming";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 
@@ -79,7 +80,7 @@ function BucketSection({
         {desc && <p className="text-xs text-slate-500">{desc}</p>}
       </div>
       {isLoading ? (
-        <p className="text-sm text-slate-500">{loadingLabel}</p>
+        <TitleGridSkeleton count={6} />
       ) : !data || data.results.length === 0 ? (
         <p className="text-sm text-slate-500">{emptyLabel}</p>
       ) : (

@@ -1,5 +1,6 @@
 import { Bookmark } from "lucide-react";
 import { TitleGrid } from "../components/TitleGrid";
+import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
 import { useWatchlist } from "../hooks/usePlaylists";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 
@@ -16,7 +17,7 @@ export function WatchlistPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">{t("title_loading")}</p>
+        <TitleGridSkeleton />
       ) : (
         <TitleGrid titles={data?.items.map((i) => i.title) ?? []} hideWatchlist />
       )}

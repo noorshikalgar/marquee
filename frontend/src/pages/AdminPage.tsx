@@ -1,5 +1,6 @@
 import { KeyRound, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
 import { useState, type FormEvent } from "react";
+import { ListSkeleton } from "../components/skeletons/ListSkeleton";
 import { ApiError } from "../lib/apiClient";
 import { useAuth } from "../lib/AuthContext";
 import { useAdminUsers, useCreateUser, useDeleteUser, useResetPassword, useUpdateUser, type AdminUser } from "../hooks/useAdmin";
@@ -195,7 +196,7 @@ export function AdminPage() {
           Accounts
         </h2>
         {isLoading ? (
-          <p className="text-sm text-slate-500">Loading…</p>
+          <ListSkeleton count={3} />
         ) : (
           <div className="space-y-3">
             {users?.map((u) => <UserRow key={u.id} user={u} currentUserId={currentUser!.id} />)}

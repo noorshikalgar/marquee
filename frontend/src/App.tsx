@@ -60,7 +60,7 @@ export function App() {
       <OnboardingModal />
       <TourOverlay />
       <RootLayout online={online}>
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="popLayout" initial={false}>
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><BrowsePage /></PageTransition>} />
             <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
