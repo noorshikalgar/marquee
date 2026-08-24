@@ -93,6 +93,7 @@ export function TitleDetailPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/20 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-base-950 to-transparent sm:h-32" />
           </>
         )}
 
