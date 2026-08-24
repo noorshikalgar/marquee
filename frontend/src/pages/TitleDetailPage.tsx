@@ -64,8 +64,10 @@ export function TitleDetailPage() {
   return (
     <div>
       <div className={clsx("relative overflow-hidden", title.backdropUrl && "min-h-96 sm:min-h-[28rem] md:min-h-[34rem]")}>
-        <div className="absolute left-4 top-4 z-10">
-          <BackButton overlay />
+        <div className="absolute inset-x-0 top-4 z-10">
+          <div className="mx-auto max-w-6xl px-4">
+            <BackButton overlay />
+          </div>
         </div>
         {title.backdropUrl && (
           <>
