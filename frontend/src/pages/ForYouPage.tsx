@@ -1,14 +1,27 @@
-import type { Playlist } from "@movie-scout/shared";
+import type { Playlist, Title } from "@movie-scout/shared";
 import { Sparkles } from "lucide-react";
+import { useState } from "react";
 import { TitleGrid } from "../components/TitleGrid";
 import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
+import { useLikedTitlesFull } from "../hooks/useLikedTitles";
 import { useAiPlaylists, usePlaylistDetail, useRefreshAiPlaylists } from "../hooks/usePlaylists";
+import { useRecordInteraction } from "../hooks/useTitles";
 import { useLanguage } from "../lib/i18n/LanguageContext";
 
 function ForYouSection({ playlist }: { playlist: Playlist }) {
   const { t } = useLanguage();
   const { data, isLoading } = usePlaylistDetail(playlist.id);
-  const titles = data?.items.map((i) => i.title) ?? [];
+  const recordInteraction = useRecordInteraction();
+  const [dismissed, setDismissed] = useState<Set<number>>(new Set());
+
+  const titles: Title[] = (data?.items ?? [])
+    .filter((i) => !dismissed.has(i.title.id))
+    .map((i) => ({ ...i.title, matchReason: i.reason }));
+
+  function handleNotInterested(title: Title) {
+    setDismissed((prev) => new Set(prev).add(title.id));
+    recordInteraction.mutate({ titleId: title.id, type: "not_interested" });
+  }
 
   return (
     <section className="space-y-3">
@@ -21,7 +34,7 @@ function ForYouSection({ playlist }: { playlist: Playlist }) {
       ) : titles.length === 0 ? (
         <p className="text-sm text-slate-500">{t("forYou_empty")}</p>
       ) : (
-        <TitleGrid titles={titles} />
+        <TitleGrid titles={titles} onNotInterested={handleNotInterested} />
       )}
     </section>
   );
@@ -30,6 +43,7 @@ function ForYouSection({ playlist }: { playlist: Playlist }) {
 export function ForYouPage() {
   const { t } = useLanguage();
   const { data: playlists, isLoading } = useAiPlaylists();
+  const { data: liked } = useLikedTitlesFull();
   const refresh = useRefreshAiPlaylists();
 
   return (
@@ -48,6 +62,14 @@ export function ForYouPage() {
           {refresh.isPending ? t("forYou_curating") : t("forYou_refresh")}
         </button>
       </div>
+
+      {playlists && playlists.length > 0 && (
+        <p className="text-xs text-slate-500">
+          {liked && liked.length > 0
+            ? `Based on ${liked.length} title${liked.length === 1 ? "" : "s"} you've liked, refreshed automatically every day.`
+            : "You haven't liked any titles yet, so these lean on general popularity — like a few titles to sharpen them."}
+        </p>
+      )}
 
       {refresh.isError && (
         <p className="rounded-lg bg-red-950/40 px-3 py-2 text-sm text-red-400">

@@ -1,5 +1,5 @@
 import type { Title } from "@movie-scout/shared";
-import { Bookmark, Clapperboard, Heart, Star } from "lucide-react";
+import { Bookmark, Clapperboard, Heart, Star, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import { formatLocalizedTitle } from "../hooks/useLocalizedTitles";
@@ -11,6 +11,7 @@ interface TitleCardProps {
   onToggleLike?: (title: Title) => void;
   isLiked?: boolean;
   localizedTitle?: string | null;
+  onNotInterested?: (title: Title) => void;
 }
 
 export function TitleCard({
@@ -20,6 +21,7 @@ export function TitleCard({
   onToggleLike,
   isLiked,
   localizedTitle,
+  onNotInterested,
 }: TitleCardProps) {
   const year = title.releaseDate ? title.releaseDate.slice(0, 4) : null;
   const displayTitle = formatLocalizedTitle(title.title, localizedTitle);
@@ -66,6 +68,19 @@ export function TitleCard({
               )}
             >
               <Bookmark className="h-4 w-4" fill={inWatchlist ? "currentColor" : "none"} />
+            </button>
+          )}
+          {onNotInterested && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                onNotInterested(title);
+              }}
+              title="Not for this list"
+              className="absolute left-2 top-2 rounded-full bg-base-950/70 p-1.5 text-slate-200 shadow-sm backdrop-blur transition hover:bg-red-950/80 hover:text-red-400"
+            >
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>

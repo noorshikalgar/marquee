@@ -9,6 +9,7 @@ interface TitleGridProps {
   titles: Title[];
   hideLike?: boolean;
   hideWatchlist?: boolean;
+  onNotInterested?: (title: Title) => void;
 }
 
 function dedupeTitles(titles: Title[]): Title[] {
@@ -21,7 +22,7 @@ function dedupeTitles(titles: Title[]): Title[] {
   });
 }
 
-export function TitleGrid({ titles: rawTitles, hideLike, hideWatchlist }: TitleGridProps) {
+export function TitleGrid({ titles: rawTitles, hideLike, hideWatchlist, onNotInterested }: TitleGridProps) {
   // TMDB's discover/upcoming endpoints sort by popularity, a value that shifts between
   // requests — paginating through a large result set can return the same title on two
   // consecutive pages as items near the page boundary reorder. Dedupe defensively so
@@ -70,6 +71,7 @@ export function TitleGrid({ titles: rawTitles, hideLike, hideWatchlist }: TitleG
           onToggleLike={hideLike ? undefined : handleToggleLike}
           isLiked={likedTitleIds.has(title.id)}
           localizedTitle={localized[title.id]?.title}
+          onNotInterested={onNotInterested}
         />
       ))}
     </div>

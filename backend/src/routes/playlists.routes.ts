@@ -22,9 +22,9 @@ playlistsRouter.post("/ai/refresh", async (req, res, next) => {
   }
 });
 
-playlistsRouter.get("/ai", (req, res, next) => {
+playlistsRouter.get("/ai", async (req, res, next) => {
   try {
-    res.json(listAiPlaylists(req.user!.id));
+    res.json(await listAiPlaylists(req.user!.id));
   } catch (err) {
     next(err);
   }

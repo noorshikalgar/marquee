@@ -19,7 +19,8 @@ import { featureFlags } from "../config/env.js";
 import { generateStructured } from "../providers/gemini/geminiClient.js";
 import { buildPlaylistPrompt } from "../providers/gemini/playlistPrompts.js";
 import { playlistSlotsSchema, type PlaylistSlotsResult } from "../providers/gemini/schemas.js";
-import { getTrending } from "./browseService.js";
+import { genreNamesToIds } from "../providers/tmdb/genreMap.js";
+import { getDiscover, getTrending } from "./browseService.js";
 import { logger } from "../utils/logger.js";
 
 function toPlaylistDto(row: ReturnType<typeof listPlaylists>[number]): Playlist {
@@ -97,6 +98,14 @@ const SLOT_META: Record<string, { name: string; description: string }> = {
   hidden_gems: { name: "Hidden Gems", description: "Lower-profile picks that still match your taste" },
 };
 
+const REFRESH_INTERVAL_HOURS = 24;
+// Heuristic ceiling: TMDB's trending list rarely dips below this for its bottom
+// entries, so anything under it plus a real rating/vote floor reads as a genuine
+// find rather than "less popular than the other blockbusters".
+const HIDDEN_GEMS_MAX_POPULARITY = 30;
+const HIDDEN_GEMS_MIN_VOTE_COUNT = 50;
+const HIDDEN_GEMS_MIN_RATING = 7;
+
 export async function generateAiPlaylists(userId: number): Promise<Playlist[]> {
   if (!featureFlags.aiSearchEnabled) {
     throw new ApiHttpError(400, "ai_disabled", "Gemini is not configured (GEMINI_API_KEY missing)");
@@ -110,24 +119,62 @@ export async function generateAiPlaylists(userId: number): Promise<Playlist[]> {
   const topGenres = topPreferences(userId, "genre", 5).map((p) => p.value);
   const excluded = excludedTitleIds(userId);
 
-  const [trendingPage1, trendingPage2] = await Promise.all([getTrending("all", "week", 1), getTrending("all", "week", 2)]);
-  const candidatePool = [...trendingPage1.results, ...trendingPage2.results].filter((t) => !excluded.has(t.id));
+  // Don't just repeat whatever was already shown — fold titles from the current
+  // AI-dynamic playlists into the exclusion set too, on top of actual dislikes/
+  // watched/not-interested, so a refresh doesn't return the same picks by default.
+  const recentlyShown = new Set<number>();
+  for (const p of listPlaylists(userId, "ai_dynamic")) {
+    for (const { item } of getPlaylistItems(p.id)) {
+      recentlyShown.add(item.titleId);
+    }
+  }
+  const excludedAll = new Set([...excluded, ...recentlyShown]);
 
-  if (candidatePool.length === 0) {
+  const [trendingPage1, trendingPage2] = await Promise.all([getTrending("all", "week", 1), getTrending("all", "week", 2)]);
+  const trendingPool = [...trendingPage1.results, ...trendingPage2.results].filter((t) => !excludedAll.has(t.id));
+
+  if (trendingPool.length === 0) {
     throw new ApiHttpError(400, "no_candidates", "No candidate titles available to build playlists from");
   }
+
+  const trendingKeys = new Set(trendingPool.map((t) => `${t.mediaType}-${t.tmdbId}`));
+
+  // Hidden Gems needs its own pool, sorted by rating with a popularity ceiling —
+  // reusing the trending pool for this slot (as before) meant "hidden gems" was
+  // never actually less mainstream, just further down the same trending list.
+  const gemsResults = await Promise.all(
+    (["movie", "tv"] as const).map(async (mediaType) => {
+      const genreIds = topGenres.length > 0 ? await genreNamesToIds(topGenres, mediaType) : [];
+      return getDiscover(mediaType, 1, {
+        withGenres: genreIds,
+        sortBy: "vote_average.desc",
+        minVoteAverage: HIDDEN_GEMS_MIN_RATING,
+        minVoteCount: HIDDEN_GEMS_MIN_VOTE_COUNT,
+        maxPopularity: HIDDEN_GEMS_MAX_POPULARITY,
+      });
+    }),
+  );
+  const gemsPool = gemsResults
+    .flatMap((p) => p.results)
+    .filter((t) => !excludedAll.has(t.id) && !trendingKeys.has(`${t.mediaType}-${t.tmdbId}`));
+
+  const candidateByKey = new Map([...trendingPool, ...gemsPool].map((c) => [`${c.mediaType}-${c.tmdbId}`, c]));
+  const gemsKeys = new Set(gemsPool.map((c) => `${c.mediaType}-${c.tmdbId}`));
+
+  const toSummary = (c: (typeof trendingPool)[number]) => ({
+    tmdbId: c.tmdbId,
+    mediaType: c.mediaType,
+    title: c.title,
+    year: c.releaseDate?.slice(0, 4) ?? "?",
+    genres: c.genres,
+    overview: c.overview,
+  });
 
   const prompt = buildPlaylistPrompt(
     likedTitles.map((t) => ({ title: t.title, mediaType: t.mediaType, year: t.releaseDate?.slice(0, 4) ?? "?", genres: t.genres })),
     topGenres,
-    candidatePool.map((c) => ({
-      tmdbId: c.tmdbId,
-      mediaType: c.mediaType,
-      title: c.title,
-      year: c.releaseDate?.slice(0, 4) ?? "?",
-      genres: c.genres,
-      overview: c.overview,
-    })),
+    trendingPool.map(toSummary),
+    gemsPool.map(toSummary),
   );
 
   let result: PlaylistSlotsResult;
@@ -138,19 +185,23 @@ export async function generateAiPlaylists(userId: number): Promise<Playlist[]> {
     throw new ApiHttpError(502, "ai_error", "Failed to generate AI playlists");
   }
 
-  const candidateByKey = new Map(candidatePool.map((c) => [`${c.mediaType}-${c.tmdbId}`, c]));
   const created: Playlist[] = [];
 
   for (const slot of result.slots) {
     const meta = SLOT_META[slot.slot];
     if (!meta) continue;
 
-    const playlistRow = upsertAiDynamicPlaylist(userId, meta.name, meta.description, slot.slot, 24);
+    const description = slot.slotReason?.trim() || meta.description;
+    const playlistRow = upsertAiDynamicPlaylist(userId, meta.name, description, slot.slot, REFRESH_INTERVAL_HOURS);
     clearPlaylistItems(playlistRow.id);
 
     let position = 0;
     for (const pick of slot.picks) {
-      const candidate = candidateByKey.get(`${pick.mediaType}-${pick.tmdbId}`);
+      const key = `${pick.mediaType}-${pick.tmdbId}`;
+      // Hidden gems must actually come from the gems pool — enforced here too, not
+      // just via the prompt instruction, in case the model picks from the wrong list.
+      if (slot.slot === "hidden_gems" && !gemsKeys.has(key)) continue;
+      const candidate = candidateByKey.get(key);
       if (!candidate) continue;
       addItemToPlaylist(playlistRow.id, candidate.id, pick.reason);
       position++;
@@ -164,6 +215,26 @@ export async function generateAiPlaylists(userId: number): Promise<Playlist[]> {
   return created;
 }
 
-export function listAiPlaylists(userId: number): Playlist[] {
-  return listPlaylists(userId, "ai_dynamic").map(toPlaylistDto);
+function isStalePlaylist(row: ReturnType<typeof getPlaylist>): boolean {
+  if (!row?.generatedAt || !row.refreshIntervalHours) return true;
+  const ageMs = Date.now() - new Date(row.generatedAt).getTime();
+  return ageMs > row.refreshIntervalHours * 60 * 60 * 1000;
+}
+
+export async function listAiPlaylists(userId: number): Promise<Playlist[]> {
+  const existingRows = listPlaylists(userId, "ai_dynamic");
+  const existing = existingRows.map(toPlaylistDto);
+
+  if (!featureFlags.aiSearchEnabled) return existing;
+  if (existingRows.length > 0 && existingRows.every((row) => !isStalePlaylist(row))) return existing;
+
+  try {
+    const refreshed = await generateAiPlaylists(userId);
+    return refreshed.length > 0 ? refreshed : existing;
+  } catch (err) {
+    // Serve whatever's already there (even if stale/empty) rather than failing the
+    // page — a quota-exhausted or briefly-down Gemini shouldn't blank the section.
+    logger.warn({ err, userId }, "Auto-refresh of AI playlists failed, serving existing data");
+    return existing;
+  }
 }

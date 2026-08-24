@@ -100,6 +100,10 @@ export const playlistSlotsSchema = {
         type: Type.OBJECT,
         properties: {
           slot: { type: Type.STRING, enum: ["weekend_picks", "because_you_liked", "hidden_gems"] },
+          slotReason: {
+            type: Type.STRING,
+            description: "One sentence explaining why THIS SLOT was curated the way it was, referencing the user's actual taste signals (e.g. \"You've been liking a lot of tense thrillers lately, so this leans into slow-burn suspense.\"). Specific to this user, not generic boilerplate.",
+          },
           picks: {
             type: Type.ARRAY,
             items: {
@@ -113,7 +117,7 @@ export const playlistSlotsSchema = {
             },
           },
         },
-        required: ["slot", "picks"],
+        required: ["slot", "slotReason", "picks"],
       },
     },
   },
@@ -121,7 +125,11 @@ export const playlistSlotsSchema = {
 };
 
 export interface PlaylistSlotsResult {
-  slots: { slot: "weekend_picks" | "because_you_liked" | "hidden_gems"; picks: { tmdbId: number; mediaType: "movie" | "tv"; reason: string }[] }[];
+  slots: {
+    slot: "weekend_picks" | "because_you_liked" | "hidden_gems";
+    slotReason: string;
+    picks: { tmdbId: number; mediaType: "movie" | "tv"; reason: string }[];
+  }[];
 }
 
 export const digestBlurbSchema = {

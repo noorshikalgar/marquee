@@ -52,6 +52,7 @@ export async function getDiscover(
     toYear?: number | null;
     minVoteAverage?: number | null;
     minVoteCount?: number;
+    maxPopularity?: number;
     watchProviderIds?: number[];
     watchRegion?: string;
   } = {},
@@ -70,6 +71,7 @@ export async function getDiscover(
     [`${dateField}.lte`]: opts.toYear ? `${opts.toYear}-12-31` : undefined,
     "vote_average.gte": opts.minVoteAverage ?? undefined,
     "vote_count.gte": opts.minVoteCount ?? undefined,
+    "popularity.lte": opts.maxPopularity ?? undefined,
     with_watch_providers: opts.watchProviderIds?.length ? opts.watchProviderIds.join("|") : undefined,
     watch_region: opts.watchProviderIds?.length ? opts.watchRegion : undefined,
   });
