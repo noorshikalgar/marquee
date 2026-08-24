@@ -1,16 +1,14 @@
 import { AnimatePresence } from "framer-motion";
-import { WifiOff } from "lucide-react";
 import type { ReactElement } from "react";
 import { useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { NavBar } from "./components/layout/NavBar";
+import { RootLayout } from "./components/layout/RootLayout";
 import { OnboardingModal } from "./components/OnboardingModal";
 import { PageTransition } from "./components/PageTransition";
 import { TourOverlay } from "./components/TourOverlay";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { useThemeSync } from "./hooks/useTheme";
 import { useAuth } from "./lib/AuthContext";
-import { useLanguage } from "./lib/i18n/LanguageContext";
 import { hasActiveServer, isDesktop } from "./lib/serverConfig";
 import { AdminPage } from "./pages/AdminPage";
 import { AdvancedBrowsePage } from "./pages/AdvancedBrowsePage";
@@ -37,7 +35,6 @@ function AdminRoute({ children }: { children: ReactElement }) {
 export function App() {
   const online = useOnlineStatus();
   const location = useLocation();
-  const { t } = useLanguage();
   const { user, loading } = useAuth();
   const [serverConnected, setServerConnected] = useState(hasActiveServer());
   useThemeSync();
@@ -59,17 +56,10 @@ export function App() {
   }
 
   return (
-    <div className="min-h-dvh">
+    <>
       <OnboardingModal />
       <TourOverlay />
-      <NavBar />
-      {!online && (
-        <div className="flex items-center justify-center gap-2 bg-amber-400/10 px-4 py-2 text-xs font-medium text-amber-300">
-          <WifiOff className="h-3.5 w-3.5" />
-          {t("common_offline")}
-        </div>
-      )}
-      <main>
+      <RootLayout online={online}>
         <AnimatePresence mode="wait" initial={false}>
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><BrowsePage /></PageTransition>} />
@@ -91,7 +81,7 @@ export function App() {
             <Route path="/person/:personId" element={<PageTransition><PersonPage /></PageTransition>} />
           </Routes>
         </AnimatePresence>
-      </main>
-    </div>
+      </RootLayout>
+    </>
   );
 }
