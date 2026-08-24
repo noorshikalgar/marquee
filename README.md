@@ -83,7 +83,9 @@ docker compose -f docker-compose.server-only.yml up -d
 
 `desktop/` is a [Tauri](https://tauri.app/) shell around the same frontend — no separate UI to maintain, just the existing React app running in the OS's native WebView instead of a browser tab. The server stays wherever you deployed it; the desktop app is a thin client.
 
-On first launch it asks for a server address, like Jellyfin/Plex desktop clients — you can save several servers and switch between them later from Settings. The frontend's API base URL is resolved at runtime (`frontend/src/lib/serverConfig.ts`), not baked in at build time, so one desktop build works against anyone's self-hosted instance.
+By default, first launch asks for a server address, like Jellyfin/Plex desktop clients — you can save several servers and switch between them later from Settings. The server URL is resolved at runtime (`frontend/src/lib/serverConfig.ts`), so one such build works against anyone's self-hosted instance.
+
+If you're building for your own household and don't want that screen, set `VITE_DESKTOP_FIXED_SERVER_URL` in `frontend/.env` before running `desktop:build` — the build is then pinned to that one server with no setup step and no server-switching UI.
 
 ```bash
 npm run desktop:dev    # launches a native window against the Vite dev server

@@ -11,11 +11,23 @@ export function isDesktop(): boolean {
   return typeof window !== "undefined" && "__TAURI__" in window;
 }
 
+// A desktop build can be pinned to one server at build time (VITE_DESKTOP_FIXED_SERVER_URL),
+// for a "just works" household install with zero setup. Without it, desktop defaults to the
+// Jellyfin-style picker below, letting one build connect to any number of self-hosted servers.
+function getFixedServerUrl(): string | null {
+  const url = import.meta.env.VITE_DESKTOP_FIXED_SERVER_URL;
+  return url ? url.trim().replace(/\/+$/, "") : null;
+}
+
+export function isFixedServerMode(): boolean {
+  return isDesktop() && !!getFixedServerUrl();
+}
+
 function defaultUrl(): string {
-  // Desktop builds ship with no baked-in server — the user picks one on first
-  // launch, possibly from several saved servers (like Jellyfin). Web builds
+  // Desktop builds without a fixed server ship with no baked-in URL — the user
+  // picks one on first launch, possibly from several saved servers. Web builds
   // keep the old single-origin behavior.
-  if (isDesktop()) return "";
+  if (isDesktop()) return getFixedServerUrl() ?? "";
   return import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 }
 
@@ -63,13 +75,15 @@ export function getActiveServer(): SavedServer | undefined {
 }
 
 export function getServerUrl(): string {
+  const fixed = getFixedServerUrl();
+  if (fixed) return fixed;
   const active = getActiveServer();
   if (active) return active.url;
   return defaultUrl();
 }
 
 export function hasActiveServer(): boolean {
-  return !isDesktop() || !!getActiveServer();
+  return isFixedServerMode() || !isDesktop() || !!getActiveServer();
 }
 
 export async function testServerUrl(url: string): Promise<boolean> {

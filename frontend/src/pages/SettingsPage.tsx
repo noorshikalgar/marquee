@@ -7,7 +7,7 @@ import { ThemePicker } from "../components/ThemePicker";
 import { useUpdateSettings } from "../hooks/useSettings";
 import { useAuth } from "../lib/AuthContext";
 import { useLanguage } from "../lib/i18n/LanguageContext";
-import { clearActiveServer, getServerUrl, isDesktop } from "../lib/serverConfig";
+import { clearActiveServer, getServerUrl, isDesktop, isFixedServerMode } from "../lib/serverConfig";
 
 export function SettingsPage() {
   const { language, setLanguage, t } = useLanguage();
@@ -72,13 +72,15 @@ export function SettingsPage() {
           <p className="text-sm text-slate-400">
             Connected to <span className="text-slate-200">{getServerUrl()}</span>
           </p>
-          <button
-            type="button"
-            onClick={handleChangeServer}
-            className="rounded-lg bg-base-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-base-700"
-          >
-            Switch server
-          </button>
+          {!isFixedServerMode() && (
+            <button
+              type="button"
+              onClick={handleChangeServer}
+              className="rounded-lg bg-base-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-base-700"
+            >
+              Switch server
+            </button>
+          )}
         </section>
       )}
 
@@ -145,14 +147,16 @@ export function SettingsPage() {
         </button>
       </section>
 
-      <section className="space-y-3 rounded-xl border border-hairline/5 bg-base-900 p-5">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-200">
-          <Smartphone className="h-4 w-4 text-amber-400" />
-          {t("settings_install")}
-        </h2>
-        <p className="text-sm text-slate-400">{t("settings_installDesc")}</p>
-        <InstallPrompt />
-      </section>
+      {!isDesktop() && (
+        <section className="space-y-3 rounded-xl border border-hairline/5 bg-base-900 p-5">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+            <Smartphone className="h-4 w-4 text-amber-400" />
+            {t("settings_install")}
+          </h2>
+          <p className="text-sm text-slate-400">{t("settings_installDesc")}</p>
+          <InstallPrompt />
+        </section>
+      )}
 
       <section className="space-y-2 rounded-xl border border-hairline/5 bg-base-900 p-5">
         <h2 className="text-sm font-semibold text-slate-200">{t("nav_notifications")}</h2>
