@@ -71,10 +71,10 @@
 }
 
 [data-theme="daylight"] {
-  --color-base-950: 255 255 255;
-  --color-base-900: 248 250 252;
-  --color-base-800: 241 245 249;
-  --color-base-700: 226 232 240;
+  --color-base-950: 244 244 247;
+  --color-base-900: 235 236 240;
+  --color-base-800: 224 227 232;
+  --color-base-700: 208 213 222;
   --color-slate-50: 15 23 42;
   --color-slate-100: 15 23 42;
   --color-slate-200: 30 41 59;
@@ -93,10 +93,10 @@
 }
 
 [data-theme="ocean"] {
-  --color-base-950: 244 250 253;
-  --color-base-900: 235 246 251;
-  --color-base-800: 219 237 247;
-  --color-base-700: 191 219 237;
+  --color-base-950: 230 241 247;
+  --color-base-900: 217 235 243;
+  --color-base-800: 198 224 238;
+  --color-base-700: 173 206 227;
   --color-slate-50: 12 30 46;
   --color-slate-100: 12 30 46;
   --color-slate-200: 24 49 71;
@@ -115,10 +115,10 @@
 }
 
 [data-theme="paper"] {
-  --color-base-950: 250 246 240;
-  --color-base-900: 245 238 227;
-  --color-base-800: 237 227 210;
-  --color-base-700: 224 210 186;
+  --color-base-950: 240 234 222;
+  --color-base-900: 232 223 206;
+  --color-base-800: 221 207 184;
+  --color-base-700: 208 190 160;
   --color-slate-50: 41 28 18;
   --color-slate-100: 41 28 18;
   --color-slate-200: 61 45 30;
