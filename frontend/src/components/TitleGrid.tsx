@@ -11,7 +11,22 @@ interface TitleGridProps {
   hideWatchlist?: boolean;
 }
 
-export function TitleGrid({ titles, hideLike, hideWatchlist }: TitleGridProps) {
+function dedupeTitles(titles: Title[]): Title[] {
+  const seen = new Set<string>();
+  return titles.filter((title) => {
+    const key = `${title.mediaType}-${title.tmdbId}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function TitleGrid({ titles: rawTitles, hideLike, hideWatchlist }: TitleGridProps) {
+  // TMDB's discover/upcoming endpoints sort by popularity, a value that shifts between
+  // requests — paginating through a large result set can return the same title on two
+  // consecutive pages as items near the page boundary reorder. Dedupe defensively so
+  // React never sees two cards with the same key.
+  const titles = dedupeTitles(rawTitles);
   const localized = useLocalizedTitles(titles);
   const likedTitleIds = useLikedTitles();
   const recordInteraction = useRecordInteraction();

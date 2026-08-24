@@ -49,7 +49,6 @@ export function ComingSoonPage() {
           label={bucket.label}
           desc={bucket.desc}
           emptyLabel={t("comingSoon_empty")}
-          loadingLabel={t("browse_loading")}
         />
       ))}
     </div>
@@ -62,16 +61,16 @@ function BucketSection({
   label,
   desc,
   emptyLabel,
-  loadingLabel,
 }: {
   mediaType: MediaType;
   bucket: UpcomingBucket;
   label: string;
   desc?: string;
   emptyLabel: string;
-  loadingLabel: string;
 }) {
-  const { data, isLoading } = useUpcoming(mediaType, bucket);
+  const { t } = useLanguage();
+  const upcoming = useUpcoming(mediaType, bucket);
+  const titles = upcoming.data?.pages.flatMap((p) => p.results) ?? [];
 
   return (
     <section className="space-y-3">
@@ -79,12 +78,26 @@ function BucketSection({
         <h2 className="text-lg font-semibold text-slate-100">{label}</h2>
         {desc && <p className="text-xs text-slate-500">{desc}</p>}
       </div>
-      {isLoading ? (
+      {upcoming.isPending ? (
         <TitleGridSkeleton count={6} />
-      ) : !data || data.results.length === 0 ? (
+      ) : titles.length === 0 ? (
         <p className="text-sm text-slate-500">{emptyLabel}</p>
       ) : (
-        <TitleGrid titles={data.results} />
+        <>
+          <TitleGrid titles={titles} />
+          {upcoming.hasNextPage && (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => upcoming.fetchNextPage()}
+                disabled={upcoming.isFetchingNextPage}
+                className="rounded-lg bg-base-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-base-700 disabled:opacity-50"
+              >
+                {upcoming.isFetchingNextPage ? t("browse_loading") : t("browse_loadMore")}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
