@@ -6,7 +6,9 @@ Rules:
 - originCountry must be ISO 3166-1 alpha-2 codes (e.g. Japan -> "JP", South Korea -> "KR", India -> "IN", United States -> "US"). Use this for "from X" / "made in X" / a nationality adjective like "Indian", "Japanese", "Korean".
 - originalLanguage must be ISO 639-1 codes (e.g. Hindi -> "hi", Korean -> "ko", Tamil -> "ta", Japanese -> "ja", English -> "en"). Only set this when the query specifically calls out the spoken/original language (e.g. "in Hindi", "Korean-language"), not just a nationality — a nationality alone should map to originCountry only.
 - keywords are free-text themes for TMDB's keyword search when no genre captures the vibe (e.g. "mythology", "epic warrior", "samurai", "post-apocalyptic").
-- sortBy: default "popularity" for generic browsing. Use "rating" whenever the query implies quality — "top rated", "best", "highest rated", "critically acclaimed", "loved by audience", "must-watch", "well reviewed". Use "newest" for "latest"/"newest"/"just released"/"recent". Use "oldest" for "oldest"/"classic"/"vintage"/"old-school".
+- sortBy: default "popularity" for generic browsing. Use "rating" whenever the query implies quality — "top rated", "best", "highest rated", "critically acclaimed", "loved by audience", "must-watch", "well reviewed", "evergreen"/"sadabahar" (Hindi for evergreen/timeless classic — implies quality, not a specific era). Use "newest" for "latest"/"newest"/"just released"/"recent"/"naye". Use "oldest" for "oldest"/"classic"/"vintage"/"old-school"/"purani"/"purane zamane ki".
+- Indian film industry nicknames map to originCountry "IN" plus the matching originalLanguage: "Bollywood" -> hi (Hindi), "Tollywood" -> te (Telugu, the dominant modern usage), "Kollywood" -> ta (Tamil), "Mollywood"/"mallu"/"malayalam" -> ml (Malayalam), "Sandalwood" -> kn (Kannada), "Pollywood" -> pa (Punjabi). These are language signals, equivalent to the query explicitly naming that language.
+- Queries may be written in Hindi (Devanagari script), Hinglish (romanized Hindi), or a mix with English — parse the intent the same way regardless of script or language. Output fields (genre names, country/language codes) are always in English/ISO codes regardless of the query's language.
 - minRating: when sortBy is "rating" (or the query otherwise implies quality), set minRating to about 7. Otherwise leave it null.
 - resultCount: a bare number attached to "top"/"give me"/"list"/"show me"/"find" (e.g. "top 10 movies", "give me 5 shows", "list 20") is a COUNT of how many results to return — extract it into resultCount. This is a completely different signal from quality: "top 10 movies of 2000" only means "give me 10 movies from 2000", NOT "top rated" — do not set sortBy to "rating" or minRating unless the query separately says something like "top rated"/"best"/"highest rated". Only treat "top" as a quality signal when it is NOT immediately followed by a number (e.g. "top movies", "top Korean thrillers").
 - eraFromYear/eraToYear: set when the query names a decade or year range (e.g. "90s movies" -> 1990-1999). Leave null otherwise — don't use era for "newest"/"latest", that's sortBy's job.
@@ -37,6 +39,18 @@ Query: "top 10 movies of 2000"
 
 Query: "give me the top 5 highest rated Indian movies from 2000"
 {"mediaType":"movie","genres":[],"keywords":[],"originCountry":["IN"],"originalLanguage":[],"eraFromYear":2000,"eraToYear":2000,"sortBy":"rating","minRating":7,"resultCount":5,"candidateTitles":[],"confidence":0.9,"needsWebDisambiguation":false,"reasoningNote":"Explicit 'highest rated' phrase triggers the quality filter; 5 is the separately-requested count."}
+
+Query: "evergreen movies of bollywood"
+{"mediaType":"movie","genres":[],"keywords":[],"originCountry":["IN"],"originalLanguage":["hi"],"eraFromYear":null,"eraToYear":null,"sortBy":"rating","minRating":7,"resultCount":null,"candidateTitles":[],"confidence":0.88,"needsWebDisambiguation":false,"reasoningNote":"Bollywood -> Hindi cinema; 'evergreen' implies timeless/quality, not a specific era."}
+
+Query: "tollywood ki best action filmein"
+{"mediaType":"movie","genres":["Action"],"keywords":[],"originCountry":["IN"],"originalLanguage":["te"],"eraFromYear":null,"eraToYear":null,"sortBy":"rating","minRating":7,"resultCount":null,"candidateTitles":[],"confidence":0.85,"needsWebDisambiguation":false,"reasoningNote":"Hinglish query — Tollywood -> Telugu cinema, 'best' -> quality sort, 'filmein' -> movies."}
+
+Query: "मुझे अच्छी मलयालम थ्रिलर फिल्में दिखाओ"
+{"mediaType":"movie","genres":["Thriller"],"keywords":[],"originCountry":["IN"],"originalLanguage":["ml"],"eraFromYear":null,"eraToYear":null,"sortBy":"popularity","minRating":null,"resultCount":null,"candidateTitles":[],"confidence":0.85,"needsWebDisambiguation":false,"reasoningNote":"Hindi script query: 'show me good Malayalam thriller movies' — Malayalam cinema, thriller genre."}
+
+Query: "purani hindi comedy movies dikhao"
+{"mediaType":"movie","genres":["Comedy"],"keywords":[],"originCountry":["IN"],"originalLanguage":["hi"],"eraFromYear":null,"eraToYear":null,"sortBy":"oldest","minRating":null,"resultCount":null,"candidateTitles":[],"confidence":0.87,"needsWebDisambiguation":false,"reasoningNote":"Hinglish: 'show old Hindi comedy movies' — purani -> oldest sort."}
 `;
 
 export function buildNlSearchPrompt(query: string): string {
