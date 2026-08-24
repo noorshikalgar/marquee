@@ -62,6 +62,19 @@ export function TitleDetailPage() {
   const hasDisliked = title.userInteractions.some((i) => i.type === "dislike");
   const hasWatched = title.userInteractions.some((i) => i.type === "watched");
 
+  // The backdrop photo's contrast needs are independent of the app's light/dark
+  // theme — a themed text color that inverts per-theme would go dark-on-dark or
+  // light-on-light against the same fixed dark scrim. Only force this literal
+  // white/black treatment when there's actually a backdrop photo to sit on;
+  // otherwise fall back to normal themed text on the plain page background.
+  const onBackdrop = !!title.backdropUrl;
+  const heroTitleClass = onBackdrop ? "text-white [text-shadow:0_2px_16px_rgb(0_0_0_/_85%)]" : "text-slate-50";
+  const heroBodyClass = onBackdrop ? "text-white/90 [text-shadow:0_1px_8px_rgb(0_0_0_/_85%)]" : "text-slate-200";
+  const heroCrewClass = onBackdrop ? "text-white/80 [text-shadow:0_1px_6px_rgb(0_0_0_/_75%)]" : "text-slate-300";
+  const heroMutedClass = onBackdrop ? "text-white/60" : "text-slate-400";
+  const heroFaintClass = onBackdrop ? "text-white/70" : "text-slate-500";
+  const heroPillClass = onBackdrop ? "bg-black/50 text-white ring-white/10" : "bg-base-950/70 text-slate-200 ring-hairline/10";
+
   return (
     <div>
       <div className={clsx("relative overflow-hidden", title.backdropUrl && "min-h-96 sm:min-h-[28rem] md:min-h-[34rem]")}>
@@ -78,8 +91,8 @@ export function TitleDetailPage() {
               style={{ y: backdropY, scale: backdropScale }}
               className="absolute inset-0 h-full w-full object-cover object-top will-change-transform"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-base-950 via-base-950/55 to-base-950/10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-base-950/85 via-base-950/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/20 to-transparent" />
           </>
         )}
 
@@ -94,10 +107,8 @@ export function TitleDetailPage() {
 
             <div className="flex-1 space-y-4">
               <div>
-                <h1 className="text-2xl font-bold text-slate-50 [text-shadow:0_2px_16px_rgb(0_0_0_/_85%)] sm:text-3xl">
-                  {displayTitle}
-                </h1>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-200 [text-shadow:0_1px_8px_rgb(0_0_0_/_85%)]">
+                <h1 className={clsx("text-2xl font-bold sm:text-3xl", heroTitleClass)}>{displayTitle}</h1>
+                <div className={clsx("mt-2 flex flex-wrap items-center gap-3 text-sm", heroBodyClass)}>
                   {title.releaseDate && <span>{formatReleaseDate(title.releaseDate, language)}</span>}
                   {title.runtime && <span>{title.runtime} min</span>}
                   {title.voteAverage > 0 && (
@@ -107,12 +118,7 @@ export function TitleDetailPage() {
                     </span>
                   )}
                   {title.imdbUrl && (
-                    <a
-                      href={title.imdbUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-1 text-slate-200 hover:text-amber-400"
-                    >
+                    <a href={title.imdbUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-amber-400">
                       IMDb <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   )}
@@ -121,18 +127,18 @@ export function TitleDetailPage() {
                   {title.genres.map((g) => (
                     <span
                       key={g}
-                      className="rounded-full bg-base-950/70 px-2.5 py-0.5 text-xs text-slate-200 ring-1 ring-hairline/10 backdrop-blur-sm"
+                      className={clsx("rounded-full px-2.5 py-0.5 text-xs ring-1 backdrop-blur-sm", heroPillClass)}
                     >
                       {g}
                     </span>
                   ))}
                 </div>
-                {title.crew.length > 0 && <CrewLines crew={title.crew} t={t} />}
+                {title.crew.length > 0 && (
+                  <CrewLines crew={title.crew} t={t} crewClass={heroCrewClass} mutedClass={heroMutedClass} />
+                )}
               </div>
 
-              <p className="max-w-2xl text-sm leading-relaxed text-slate-200 [text-shadow:0_1px_8px_rgb(0_0_0_/_85%)]">
-                {displayOverview}
-              </p>
+              <p className={clsx("max-w-2xl text-sm leading-relaxed", heroBodyClass)}>{displayOverview}</p>
 
               <div className="flex flex-wrap gap-2">
                 <ActionButton
@@ -162,7 +168,7 @@ export function TitleDetailPage() {
               </div>
 
               {(title.watchProviders.flatrate.length > 0 || title.watchProviders.rent.length > 0 || title.watchProviders.buy.length > 0) && (
-                <WatchProvidersSection watchProviders={title.watchProviders} t={t} />
+                <WatchProvidersSection watchProviders={title.watchProviders} t={t} labelClass={heroFaintClass} />
               )}
             </div>
           </div>
@@ -248,7 +254,17 @@ function ActionButton({
   );
 }
 
-function CrewLines({ crew, t }: { crew: CrewMember[]; t: (key: TranslationKey) => string }) {
+function CrewLines({
+  crew,
+  t,
+  crewClass,
+  mutedClass,
+}: {
+  crew: CrewMember[];
+  t: (key: TranslationKey) => string;
+  crewClass: string;
+  mutedClass: string;
+}) {
   const byJob = new Map<string, CrewMember[]>();
   for (const member of crew) {
     const list = byJob.get(member.job) ?? [];
@@ -264,13 +280,13 @@ function CrewLines({ crew, t }: { crew: CrewMember[]; t: (key: TranslationKey) =
   };
 
   return (
-    <div className="mt-3 space-y-1 text-sm text-slate-300 [text-shadow:0_1px_6px_rgb(0_0_0_/_75%)]">
+    <div className={clsx("mt-3 space-y-1 text-sm", crewClass)}>
       {[...byJob.entries()].map(([job, members]) => (
         <p key={job}>
-          <span className="text-slate-400">{jobLabel(job)}: </span>
+          <span className={mutedClass}>{jobLabel(job)}: </span>
           {members.map((m, i) => (
             <span key={m.personId}>
-              <Link to={`/person/${m.personId}`} className="text-slate-300 hover:text-amber-400 hover:underline">
+              <Link to={`/person/${m.personId}`} className="hover:text-amber-400 hover:underline">
                 {m.name}
               </Link>
               {i < members.length - 1 && ", "}
@@ -285,9 +301,11 @@ function CrewLines({ crew, t }: { crew: CrewMember[]; t: (key: TranslationKey) =
 function WatchProvidersSection({
   watchProviders,
   t,
+  labelClass,
 }: {
   watchProviders: import("@movie-scout/shared").WatchProviders;
   t: (key: TranslationKey) => string;
+  labelClass: string;
 }) {
   const groups = [
     { label: t("title_stream"), list: watchProviders.flatrate },
@@ -299,7 +317,7 @@ function WatchProvidersSection({
     <div className="space-y-2">
       {groups.map((g) => (
         <div key={g.label} className="flex items-center gap-2 text-sm">
-          <span className="w-14 text-slate-500">{g.label}</span>
+          <span className={clsx("w-14", labelClass)}>{g.label}</span>
           <div className="flex gap-2">
             {g.list.map((p) => (
               <img
@@ -318,7 +336,7 @@ function WatchProvidersSection({
           href={watchProviders.link}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-amber-400"
+          className={clsx("inline-flex items-center gap-1 text-xs hover:text-amber-400", labelClass)}
         >
           {t("title_moreWatchOptions")} <ExternalLink className="h-3 w-3" />
         </a>
