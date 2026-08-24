@@ -22,7 +22,12 @@ export const nlQuerySchema = {
     minRating: {
       type: Type.NUMBER,
       nullable: true,
-      description: "0-10 TMDB rating floor. Set to roughly 7 when the query implies quality (top rated, best, acclaimed, loved by audience). Leave null otherwise.",
+      description: "0-10 TMDB rating floor. Set to roughly 7 when the query implies quality (top rated, best, acclaimed, loved by audience). Leave null otherwise. A bare number before the word 'movies'/'shows' (e.g. 'top 10 movies') is a COUNT, not a quality signal — do not set this from it.",
+    },
+    resultCount: {
+      type: Type.INTEGER,
+      nullable: true,
+      description: "How many results the user explicitly asked for, e.g. 'top 10 movies' -> 10, 'give me 5 shows' -> 5, 'list 20' -> 20. Null if no count was requested. This is independent of sortBy/minRating.",
     },
     candidateTitles: {
       type: Type.ARRAY,
@@ -59,6 +64,7 @@ export interface NlQueryResult {
   eraToYear: number | null;
   sortBy: "popularity" | "rating" | "newest" | "oldest";
   minRating: number | null;
+  resultCount: number | null;
   candidateTitles: string[];
   confidence: number;
   needsWebDisambiguation: boolean;

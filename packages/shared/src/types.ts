@@ -120,6 +120,7 @@ export interface NlSearchInterpretation {
   era: { fromYear: number | null; toYear: number | null };
   sortBy: "popularity" | "rating" | "newest" | "oldest";
   minRating: number | null;
+  resultCount: number | null;
 }
 
 export interface NlSearchResponse {

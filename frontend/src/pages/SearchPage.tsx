@@ -33,6 +33,7 @@ export function SearchPage() {
         interpreted.minRating && `${interpreted.minRating}+ rating`,
         interpreted.era.fromYear && `from ${interpreted.era.fromYear}`,
         interpreted.era.toYear && `to ${interpreted.era.toYear}`,
+        interpreted.resultCount && `top ${interpreted.resultCount}`,
       ].filter((c): c is string => !!c)
     : [];
 

@@ -79,6 +79,8 @@ async function resolveResults(parsed: NlQueryResult): Promise<Title[]> {
       keywordIds.length > 0 ||
       parsed.originCountry.length > 0 ||
       parsed.originalLanguage.length > 0 ||
+      parsed.eraFromYear != null ||
+      parsed.eraToYear != null ||
       parsed.sortBy !== "popularity"
     ) {
       const paged = await getDiscover(mediaType, 1, {
@@ -90,8 +92,11 @@ async function resolveResults(parsed: NlQueryResult): Promise<Title[]> {
         toYear: parsed.eraToYear,
         sortBy: SORT_MAP[parsed.sortBy](dateField),
         minVoteAverage: parsed.minRating,
-        // A low floor still lets small-fanbase titles outrank genuinely well-regarded movies.
-        minVoteCount: parsed.sortBy === "rating" ? 300 : undefined,
+        // Rating sort needs a much higher floor so small-fanbase titles can't outrank
+        // genuinely well-regarded movies; other sorts still need a low floor so
+        // zero/near-zero-vote noise (obscure regional catalog entries) doesn't crowd
+        // out real results on narrow queries (e.g. a single country + year).
+        minVoteCount: parsed.sortBy === "rating" ? 300 : 5,
       });
       for (const title of paged.results) {
         const key = `${title.mediaType}-${title.tmdbId}`;
@@ -117,7 +122,8 @@ async function resolveResults(parsed: NlQueryResult): Promise<Title[]> {
     collected.push(dto);
   }
 
-  return collected.slice(0, 40);
+  const cap = parsed.resultCount ? Math.min(Math.max(parsed.resultCount, 1), 40) : 40;
+  return collected.slice(0, cap);
 }
 
 async function literalFallbackSearch(query: string): Promise<NlSearchResponse> {
@@ -142,6 +148,7 @@ async function literalFallbackSearch(query: string): Promise<NlSearchResponse> {
       era: { fromYear: null, toYear: null },
       sortBy: "popularity",
       minRating: null,
+      resultCount: null,
     },
     results,
     aiUnavailable: true,
@@ -158,5 +165,6 @@ function toInterpretation(parsed: NlQueryResult) {
     era: { fromYear: parsed.eraFromYear, toYear: parsed.eraToYear },
     sortBy: parsed.sortBy,
     minRating: parsed.minRating,
+    resultCount: parsed.resultCount,
   };
 }
