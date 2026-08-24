@@ -46,3 +46,25 @@ export function buildNlSearchPrompt(query: string): string {
 export function buildRefinementPrompt(query: string, webSnippets: string[]): string {
   return `${SYSTEM_CONTEXT}\nThe query below was ambiguous. Here are some live web search results that may help disambiguate it:\n${webSnippets.map((s, i) => `[${i + 1}] ${s}`).join("\n")}\n\nNow parse this query using the web context above where relevant:\nQuery: "${query}"\nRespond with only the JSON object.`;
 }
+
+interface RerankCandidate {
+  tmdbId: number;
+  mediaType: "movie" | "tv";
+  title: string;
+  year: string | null;
+  genres: string[];
+  overview: string;
+}
+
+export function buildSearchRerankPrompt(query: string, candidates: RerankCandidate[]): string {
+  return `You are curating search results for Marquee, a movie and TV app. A user searched: "${query}"
+
+The candidates below matched mechanically (genre/country/year filters), but that list can include obscure, low-quality, or adult-oriented titles that technically fit the filters yet aren't what someone actually means by this query — TMDB's catalog has a long tail of straight-to-video and regional filler content mixed in with titles people would actually recognize or want.
+
+Pick the candidates that best answer the query, in order of relevance. Prefer titles a person would recognize or genuinely want as an answer over obscure ones, unless the query specifically asks for hidden gems, underrated picks, or niche/indie content. Exclude anything obviously low-quality or irrelevant to the query's intent. Keep at most ${candidates.length} picks; it's fine to return fewer if many candidates are weak matches, but return at least a few if any are reasonable.
+
+Candidates:
+${candidates.map((c) => `- tmdbId:${c.tmdbId} mediaType:${c.mediaType} "${c.title}" (${c.year ?? "?"}) [${c.genres.join(", ") || "no genres"}]: ${c.overview.slice(0, 160)}`).join("\n")}
+
+Respond with only the JSON object: picks in relevance order, each with a one-sentence reason tied to the query.`;
+}

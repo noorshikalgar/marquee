@@ -3,8 +3,8 @@ import { getCachedQuery, setCachedQuery } from "../db/repositories/aiCacheRepo.j
 import { getTitlesByIds, toTitleDtos, upsertTitles } from "../db/repositories/titlesRepo.js";
 import { featureFlags } from "../config/env.js";
 import { generateStructured } from "../providers/gemini/geminiClient.js";
-import { buildNlSearchPrompt, buildRefinementPrompt } from "../providers/gemini/prompts.js";
-import { nlQuerySchema, type NlQueryResult } from "../providers/gemini/schemas.js";
+import { buildNlSearchPrompt, buildRefinementPrompt, buildSearchRerankPrompt } from "../providers/gemini/prompts.js";
+import { nlQuerySchema, searchRerankSchema, type NlQueryResult, type SearchRerankResult } from "../providers/gemini/schemas.js";
 import { genreNamesToIds } from "../providers/tmdb/genreMap.js";
 import { keywordNamesToIds, searchMulti } from "../providers/tmdb/tmdbSearch.js";
 import { mapListItemToTitleInsert } from "../providers/tmdb/tmdbMappers.js";
@@ -46,7 +46,7 @@ export async function searchNaturalLanguage(query: string): Promise<NlSearchResp
     }
   }
 
-  const results = await resolveResults(parsed);
+  const results = await resolveResults(query, parsed);
   setCachedQuery(
     queryHash,
     query,
@@ -64,10 +64,11 @@ const SORT_MAP: Record<NlQueryResult["sortBy"], (dateField: string) => string> =
   oldest: (dateField) => `${dateField}.asc`,
 };
 
-async function resolveResults(parsed: NlQueryResult): Promise<Title[]> {
+async function resolveResults(query: string, parsed: NlQueryResult): Promise<Title[]> {
   const mediaTypes: MediaType[] = parsed.mediaType === "all" ? ["movie", "tv"] : [parsed.mediaType];
   const collected: Title[] = [];
   const seen = new Set<string>();
+  let usedDiscover = false;
 
   for (const mediaType of mediaTypes) {
     const genreIds = await genreNamesToIds(parsed.genres, mediaType);
@@ -83,6 +84,7 @@ async function resolveResults(parsed: NlQueryResult): Promise<Title[]> {
       parsed.eraToYear != null ||
       parsed.sortBy !== "popularity"
     ) {
+      usedDiscover = true;
       const paged = await getDiscover(mediaType, 1, {
         withGenres: genreIds,
         withKeywords: keywordIds,
@@ -123,7 +125,48 @@ async function resolveResults(parsed: NlQueryResult): Promise<Title[]> {
   }
 
   const cap = parsed.resultCount ? Math.min(Math.max(parsed.resultCount, 1), 40) : 40;
+
+  // Discover-based results match filters mechanically (genre/country/year) with no
+  // sense of whether a title is actually a good, recognizable answer to the query —
+  // TMDB's catalog has a long tail of obscure/low-quality entries that pass the
+  // filters. A direct-title lookup (candidateTitles) is already precise and doesn't
+  // need this, so it's skipped when discover wasn't used.
+  if (usedDiscover && collected.length > 0) {
+    const ranked = await rerankResults(query, collected);
+    return ranked.slice(0, cap);
+  }
+
   return collected.slice(0, cap);
+}
+
+async function rerankResults(query: string, candidates: Title[]): Promise<Title[]> {
+  const rerankCandidates = candidates.map((t) => ({
+    tmdbId: t.tmdbId,
+    mediaType: t.mediaType,
+    title: t.title,
+    year: t.releaseDate ? t.releaseDate.slice(0, 4) : null,
+    genres: t.genres,
+    overview: t.overview,
+  }));
+
+  try {
+    const result = await generateStructured<SearchRerankResult>(
+      buildSearchRerankPrompt(query, rerankCandidates),
+      searchRerankSchema,
+    );
+    if (result.picks.length === 0) return candidates;
+
+    const byKey = new Map(candidates.map((t) => [`${t.mediaType}-${t.tmdbId}`, t]));
+    const ranked: Title[] = [];
+    for (const pick of result.picks) {
+      const match = byKey.get(`${pick.mediaType}-${pick.tmdbId}`);
+      if (match) ranked.push({ ...match, matchReason: pick.reason });
+    }
+    return ranked.length > 0 ? ranked : candidates;
+  } catch (err) {
+    logger.warn({ err, query }, "Gemini search re-rank failed, keeping unranked results");
+    return candidates;
+  }
 }
 
 async function literalFallbackSearch(query: string): Promise<NlSearchResponse> {

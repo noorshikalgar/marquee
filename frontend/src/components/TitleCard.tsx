@@ -102,6 +102,9 @@ export function TitleCard({
               </span>
             )}
           </div>
+          {title.matchReason && (
+            <p className="mt-1 line-clamp-2 text-xs text-slate-500">{title.matchReason}</p>
+          )}
         </div>
       </Link>
     </div>

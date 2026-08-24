@@ -127,3 +127,26 @@ export const digestBlurbSchema = {
 export interface DigestBlurbResult {
   items: { tmdbId: number; mediaType: "movie" | "tv"; headline: string; body: string }[];
 }
+
+export const searchRerankSchema = {
+  type: Type.OBJECT,
+  properties: {
+    picks: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          tmdbId: { type: Type.INTEGER },
+          mediaType: { type: Type.STRING, enum: ["movie", "tv"] },
+          reason: { type: Type.STRING, description: "One short sentence on why this is a good match for the query." },
+        },
+        required: ["tmdbId", "mediaType", "reason"],
+      },
+    },
+  },
+  required: ["picks"],
+};
+
+export interface SearchRerankResult {
+  picks: { tmdbId: number; mediaType: "movie" | "tv"; reason: string }[];
+}

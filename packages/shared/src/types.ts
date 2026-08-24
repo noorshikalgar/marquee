@@ -20,6 +20,7 @@ export interface Title {
   popularity: number;
   localizedTitle?: string | null;
   localizedOverview?: string | null;
+  matchReason?: string | null;
 }
 
 export interface WatchProvider {
