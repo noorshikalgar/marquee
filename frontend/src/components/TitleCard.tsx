@@ -1,6 +1,5 @@
 import type { Title } from "@movie-scout/shared";
 import { Bookmark, Clapperboard, Heart, Star } from "lucide-react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import { formatLocalizedTitle } from "../hooks/useLocalizedTitles";
@@ -29,14 +28,15 @@ export function TitleCard({
     <div className="group relative">
       <Link
         to={`/title/${title.mediaType}/${title.tmdbId}`}
+        viewTransition
         className={clsx(
           "block overflow-hidden rounded-xl bg-base-800 ring-1 transition",
           isLiked ? "ring-2 ring-rose-500/80" : "ring-hairline/5 hover:ring-amber-400/50",
         )}
       >
-        <motion.div
-          layoutId={`poster-${title.mediaType}-${title.tmdbId}`}
+        <div
           className="relative aspect-[2/3] w-full overflow-hidden bg-base-700"
+          style={{ viewTransitionName: `poster-${title.mediaType}-${title.tmdbId}` }}
         >
           {title.posterUrl ? (
             <img
@@ -68,7 +68,7 @@ export function TitleCard({
               <Bookmark className="h-4 w-4" fill={inWatchlist ? "currentColor" : "none"} />
             </button>
           )}
-        </motion.div>
+        </div>
         <div className="relative p-2.5">
           {onToggleLike && (
             <button
@@ -93,7 +93,7 @@ export function TitleCard({
           <p className="truncate text-sm font-medium text-slate-100" title={displayTitle}>
             {displayTitle}
           </p>
-          <div className="mt-1 flex items-center gap-2 text-xs text-slate-400">
+          <div className="mt-1 flex h-4 items-center gap-2 text-xs text-slate-400">
             {year && <span>{year}</span>}
             {title.voteAverage > 0 && (
               <span className="flex items-center gap-0.5 text-amber-400">

@@ -85,12 +85,12 @@ export function TitleDetailPage() {
 
         <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-24 sm:pb-16 sm:pt-36">
           <div className="flex flex-col gap-6 sm:flex-row">
-            <motion.div
-              layoutId={`poster-${title.mediaType}-${title.tmdbId}`}
+            <div
               className="aspect-[2/3] w-40 shrink-0 self-start overflow-hidden rounded-xl shadow-2xl ring-1 ring-hairline/10 sm:w-56"
+              style={{ viewTransitionName: `poster-${title.mediaType}-${title.tmdbId}` }}
             >
               {title.posterUrl && <img src={title.posterUrl} alt={title.title} className="h-full w-full object-cover" />}
-            </motion.div>
+            </div>
 
             <div className="flex-1 space-y-4">
               <div>

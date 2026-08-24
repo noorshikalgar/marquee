@@ -1,7 +1,6 @@
-import { AnimatePresence } from "framer-motion";
 import type { ReactElement } from "react";
 import { useState } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet, RouterProvider, useLocation } from "react-router-dom";
 import { RootLayout } from "./components/layout/RootLayout";
 import { OnboardingModal } from "./components/OnboardingModal";
 import { PageTransition } from "./components/PageTransition";
@@ -32,20 +31,16 @@ function AdminRoute({ children }: { children: ReactElement }) {
   return children;
 }
 
-export function App() {
+// The root layout route: gates on auth, then renders the app chrome (sidebar,
+// onboarding, tour) around whichever child route matched. Living as a route
+// component (rather than App's old early-return style) is what lets navigate()/
+// <Link> use React Router's native view-transition support, which only works in
+// Data Router mode (createBrowserRouter + RouterProvider), not plain <BrowserRouter>.
+function RootRoute() {
   const online = useOnlineStatus();
   const location = useLocation();
   const { user, loading } = useAuth();
-  const [serverConnected, setServerConnected] = useState(hasActiveServer());
   useThemeSync();
-
-  if (isDesktop() && !serverConnected) {
-    return <ServerSetupPage onConnected={() => setServerConnected(true)} />;
-  }
-
-  if (location.pathname === "/login") {
-    return <LoginPage />;
-  }
 
   if (loading) {
     return <div className="flex min-h-dvh items-center justify-center text-sm text-slate-500">Loading…</div>;
@@ -60,28 +55,45 @@ export function App() {
       <OnboardingModal />
       <TourOverlay />
       <RootLayout online={online}>
-        <AnimatePresence mode="popLayout" initial={false}>
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<PageTransition><BrowsePage /></PageTransition>} />
-            <Route path="/search" element={<PageTransition><SearchPage /></PageTransition>} />
-            <Route path="/discover" element={<PageTransition><AdvancedBrowsePage /></PageTransition>} />
-            <Route path="/coming-soon" element={<PageTransition><ComingSoonPage /></PageTransition>} />
-            <Route path="/my" element={<Navigate to="/my/liked" replace />} />
-            <Route path="/my/liked" element={<PageTransition><LikedPage /></PageTransition>} />
-            <Route path="/my/watchlist" element={<PageTransition><WatchlistPage /></PageTransition>} />
-            <Route path="/my/for-you" element={<PageTransition><ForYouPage /></PageTransition>} />
-            <Route path="/for-you" element={<Navigate to="/my/for-you" replace />} />
-            <Route path="/watchlist" element={<Navigate to="/my/watchlist" replace />} />
-            <Route path="/playlists/:id" element={<Navigate to="/my/for-you" replace />} />
-            <Route path="/notifications" element={<PageTransition><NotificationsPage /></PageTransition>} />
-            <Route path="/notifications/:id" element={<PageTransition><DigestDetailPage /></PageTransition>} />
-            <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
-            <Route path="/admin" element={<AdminRoute><PageTransition><AdminPage /></PageTransition></AdminRoute>} />
-            <Route path="/title/:mediaType/:tmdbId" element={<PageTransition><TitleDetailPage /></PageTransition>} />
-            <Route path="/person/:personId" element={<PageTransition><PersonPage /></PageTransition>} />
-          </Routes>
-        </AnimatePresence>
+        <Outlet />
       </RootLayout>
     </>
   );
+}
+
+const router = createBrowserRouter([
+  { path: "/login", element: <LoginPage /> },
+  {
+    path: "/",
+    element: <RootRoute />,
+    children: [
+      { index: true, element: <PageTransition><BrowsePage /></PageTransition> },
+      { path: "search", element: <PageTransition><SearchPage /></PageTransition> },
+      { path: "discover", element: <PageTransition><AdvancedBrowsePage /></PageTransition> },
+      { path: "coming-soon", element: <PageTransition><ComingSoonPage /></PageTransition> },
+      { path: "my", element: <Navigate to="/my/liked" replace /> },
+      { path: "my/liked", element: <PageTransition><LikedPage /></PageTransition> },
+      { path: "my/watchlist", element: <PageTransition><WatchlistPage /></PageTransition> },
+      { path: "my/for-you", element: <PageTransition><ForYouPage /></PageTransition> },
+      { path: "for-you", element: <Navigate to="/my/for-you" replace /> },
+      { path: "watchlist", element: <Navigate to="/my/watchlist" replace /> },
+      { path: "playlists/:id", element: <Navigate to="/my/for-you" replace /> },
+      { path: "notifications", element: <PageTransition><NotificationsPage /></PageTransition> },
+      { path: "notifications/:id", element: <PageTransition><DigestDetailPage /></PageTransition> },
+      { path: "settings", element: <PageTransition><SettingsPage /></PageTransition> },
+      { path: "admin", element: <AdminRoute><PageTransition><AdminPage /></PageTransition></AdminRoute> },
+      { path: "title/:mediaType/:tmdbId", element: <PageTransition><TitleDetailPage /></PageTransition> },
+      { path: "person/:personId", element: <PageTransition><PersonPage /></PageTransition> },
+    ],
+  },
+]);
+
+export function App() {
+  const [serverConnected, setServerConnected] = useState(hasActiveServer());
+
+  if (isDesktop() && !serverConnected) {
+    return <ServerSetupPage onConnected={() => setServerConnected(true)} />;
+  }
+
+  return <RouterProvider router={router} />;
 }

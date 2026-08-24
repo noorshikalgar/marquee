@@ -13,7 +13,7 @@ export function BackButton({ fallbackTo = "/", overlay = false }: { fallbackTo?:
     if (window.history.state?.idx > 0) {
       navigate(-1);
     } else {
-      navigate(fallbackTo);
+      navigate(fallbackTo, { viewTransition: true });
     }
   }
 
