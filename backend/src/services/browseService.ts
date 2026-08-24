@@ -43,6 +43,7 @@ export async function getDiscover(
   opts: {
     withGenres?: number[];
     genreMatch?: "and" | "or";
+    withoutGenres?: number[];
     withKeywords?: number[];
     sortBy?: string;
     originCountry?: string[];
@@ -51,6 +52,8 @@ export async function getDiscover(
     toYear?: number | null;
     minVoteAverage?: number | null;
     minVoteCount?: number;
+    watchProviderIds?: number[];
+    watchRegion?: string;
   } = {},
 ) {
   const dateField = mediaType === "movie" ? "primary_release_date" : "first_air_date";
@@ -59,6 +62,7 @@ export async function getDiscover(
     page,
     sort_by: opts.sortBy ?? "popularity.desc",
     with_genres: opts.withGenres?.length ? opts.withGenres.join(genreSeparator) : undefined,
+    without_genres: opts.withoutGenres?.length ? opts.withoutGenres.join(",") : undefined,
     with_keywords: opts.withKeywords?.length ? opts.withKeywords.join("|") : undefined,
     with_origin_country: opts.originCountry?.length ? opts.originCountry.join("|") : undefined,
     with_original_language: opts.originalLanguage?.length ? opts.originalLanguage.join("|") : undefined,
@@ -66,6 +70,8 @@ export async function getDiscover(
     [`${dateField}.lte`]: opts.toYear ? `${opts.toYear}-12-31` : undefined,
     "vote_average.gte": opts.minVoteAverage ?? undefined,
     "vote_count.gte": opts.minVoteCount ?? undefined,
+    with_watch_providers: opts.watchProviderIds?.length ? opts.watchProviderIds.join("|") : undefined,
+    watch_region: opts.watchProviderIds?.length ? opts.watchRegion : undefined,
   });
   return toPagedTitles(raw, mediaType);
 }

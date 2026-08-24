@@ -34,6 +34,21 @@ export const nlQuerySchema = {
       items: { type: Type.STRING },
       description: "Specific real movie/show titles this query might be referring to, if any",
     },
+    excludeGenres: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: "TMDB genre names to exclude, when the query says 'not X' / 'but not X' / 'excluding X' / 'no X'. e.g. 'Korean thrillers but not horror' -> excludeGenres: [\"Horror\"].",
+    },
+    watchProviders: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: "Streaming service names, only when the query specifically names one, e.g. 'on Netflix', 'available on Prime' -> [\"Netflix\"]. Leave empty otherwise — do not guess a service.",
+    },
+    wantsSimilarTo: {
+      type: Type.STRING,
+      nullable: true,
+      description: "Set this to a real title's name ONLY when the query asks for OTHER titles similar to/like/in the style of it (e.g. 'shows like Breaking Bad' -> \"Breaking Bad\"). Do not set this when the query is just naming the title itself as what it wants (that's candidateTitles' job) — this field is specifically for 'similar to' requests.",
+    },
     confidence: { type: Type.NUMBER, description: "0 to 1, how confident the interpretation is" },
     needsWebDisambiguation: {
       type: Type.BOOLEAN,
@@ -49,6 +64,8 @@ export const nlQuerySchema = {
     "originalLanguage",
     "sortBy",
     "candidateTitles",
+    "excludeGenres",
+    "watchProviders",
     "confidence",
     "needsWebDisambiguation",
   ],
@@ -66,6 +83,9 @@ export interface NlQueryResult {
   minRating: number | null;
   resultCount: number | null;
   candidateTitles: string[];
+  excludeGenres: string[];
+  watchProviders: string[];
+  wantsSimilarTo: string | null;
   confidence: number;
   needsWebDisambiguation: boolean;
   reasoningNote: string;

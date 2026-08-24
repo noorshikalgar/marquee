@@ -1,6 +1,6 @@
-import { Search, Sparkles } from "lucide-react";
+import { Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { TitleGrid } from "../components/TitleGrid";
 import { TitleGridSkeleton } from "../components/skeletons/TitleGridSkeleton";
 import { useNlSearch } from "../hooks/useSearch";
@@ -27,9 +27,12 @@ export function SearchPage() {
     ? [
         interpreted.mediaType !== "all" && interpreted.mediaType,
         ...interpreted.genres,
+        ...interpreted.excludeGenres.map((g) => `not ${g}`),
         ...interpreted.originCountry,
         ...interpreted.originalLanguage.map((l) => `lang: ${l}`),
         ...interpreted.keywords,
+        ...interpreted.watchProviders.map((p) => `on ${p}`),
+        interpreted.wantsSimilarTo && `like ${interpreted.wantsSimilarTo}`,
         interpreted.sortBy !== "popularity" && `sorted by ${interpreted.sortBy}`,
         interpreted.minRating && `${interpreted.minRating}+ rating`,
         interpreted.era.fromYear && `from ${interpreted.era.fromYear}`,
@@ -98,9 +101,16 @@ export function SearchPage() {
       {nlSearch.data && (
         <div className="space-y-4">
           {nlSearch.data.aiUnavailable && (
-            <p className="rounded-lg bg-amber-400/10 px-3 py-2 text-sm text-amber-300 ring-1 ring-amber-400/20">
-              AI search is temporarily unavailable, so these are plain text-match results instead.
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-amber-400/10 px-3 py-2.5 text-sm text-amber-300 ring-1 ring-amber-400/20">
+              <span>AI search is temporarily unavailable, so these are plain text-match results instead.</span>
+              <Link
+                to="/discover"
+                className="flex shrink-0 items-center gap-1.5 rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-semibold text-accent-ink transition hover:bg-amber-300"
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Search with Filters
+              </Link>
+            </div>
           )}
           {chips.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">

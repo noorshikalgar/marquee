@@ -115,6 +115,7 @@ export interface PlaylistItem {
 export interface NlSearchInterpretation {
   mediaType: MediaType | "all";
   genres: string[];
+  excludeGenres: string[];
   keywords: string[];
   originCountry: string[];
   originalLanguage: string[];
@@ -122,6 +123,8 @@ export interface NlSearchInterpretation {
   sortBy: "popularity" | "rating" | "newest" | "oldest";
   minRating: number | null;
   resultCount: number | null;
+  watchProviders: string[];
+  wantsSimilarTo: string | null;
 }
 
 export interface NlSearchResponse {

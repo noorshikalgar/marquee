@@ -13,7 +13,7 @@ const nlSchema = z.object({ query: z.string().min(1).max(300) });
 searchRouter.post("/nl", async (req, res, next) => {
   try {
     const { query } = nlSchema.parse(req.body);
-    res.json(await searchNaturalLanguage(query));
+    res.json(await searchNaturalLanguage(req.user!.id, query));
   } catch (err) {
     next(err);
   }
