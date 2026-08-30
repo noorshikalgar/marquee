@@ -3,6 +3,16 @@
 FROM node:22-bookworm-slim AS base
 WORKDIR /app
 
+# Native dependencies required to compile better-sqlite3 if
+# its prebuilt binary is unavailable
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHON=/usr/bin/python3
+
 # ---- deps: install full workspace (dev deps included, needed to compile) ----
 FROM base AS deps
 COPY package.json package-lock.json ./
