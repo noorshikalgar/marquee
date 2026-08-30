@@ -19,6 +19,7 @@ const envSchema = z.object({
   FRONTEND_ORIGIN: z.string().default("http://localhost:5173"),
   ADMIN_USERNAME: z.string().default("admin"),
   ADMIN_PASSWORD: z.string().default("changeme123"),
+  COOKIE_SECURE: z.boolean().default(false),
 });
 
 const parsed = envSchema.safeParse(process.env);

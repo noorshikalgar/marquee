@@ -15,7 +15,7 @@ authRouter.post("/login", (req, res, next) => {
     res.cookie(SESSION_COOKIE_NAME, token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production" && env.COOKIE_SECURE,
       expires: new Date(expiresAt),
       path: "/",
     });
